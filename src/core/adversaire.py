@@ -1,26 +1,27 @@
-from bddmanager import sauvegarder_objets, charger_donnees
+import random
+from src.database.bddmanager import sauvegarder_objets, charger_donnees
+from src.core.ressources import *
+from src.core.personnage import Personnage
+
 
 class Adversaire:
-    def __init__(self, id, pseudo, hp, hp_total, mana, mana_total, attaque, niveaux, experience, points_de_stats=0):
+    def __init__(self, id, pseudo, hp, hp_total, mana, mana_total, force, defense, magie, resistance, agilite, niveau, experience):
         self.id = id
         self.pseudo = pseudo
-        self.hp = hp  # HP actuels
-        self.hp_total = hp_total  # HP totaux
-        self.mana = mana  # Mana actuel
-        self.mana_total = mana_total  # Mana total
-        self.attaque = attaque
-        self.niveaux = niveaux
+        self.hp = hp
+        self.hp_total = hp_total
+        self.mana = mana
+        self.mana_total = mana_total
+        self.force = force
+        self.defense = defense
+        self.magie = magie
+        self.resistance = resistance
+        self.agilite = agilite
+        self.niveau = niveau
         self.experience = experience
-        self.points_de_stats = points_de_stats
-
-    def attaquer(self, cible):
-        """Méthode pour attaquer un autre adversaire"""
-        print(f"{self.pseudo} attaque {cible.pseudo} avec {self.attaque} de dégâts.")
-        cible.subir_attaque(self.attaque)
 
     def subir_attaque(self, degats):
-        """Méthode qui permet à l'adversaire de subir une attaque"""
-        self.hp = max(0, self.hp - degats)  # Ensure HP does not go below 0
+        self.hp = max(0, self.hp - degats)
         print(f"{self.pseudo} subit {degats} de dégâts. Il lui reste {self.hp} HP.")
 
         # Vérifier si l'adversaire est mort
