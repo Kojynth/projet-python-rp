@@ -63,7 +63,7 @@ class DatabaseManager:
             # Nocturnes
             ('Vampire', 'VAM', 'Nocturne', 'Créature dont l\'origine est méconnu. A toujours existé tout au long de l\'histoire. Il est dit qu\ils étaient d\'ancien humains ayant sombré face à une malédiction mais nous ignorons si cela est vrai ou non.', 
              20, 20, 12, 12, 12, 12, 12),
-            ('Loup-Garou', 'LOU', 'Nocturne', 'Bête dont l\'origine est méconnu. Leurs férocité et leurs soifs de chair est leur principale caractéristique., 
+            ('Loup-Garou', 'LOU', 'Nocturne', 'Bête dont l\'origine est méconnu. Leurs férocité et leurs soifs de chair est leur principale caractéristique.', 
              15, 10, 25, 15, 5, 25, 25),
             ('Youkai', 'YOU', 'Nocturne', 'Esprit mystique maîtrisant les arts magiques', 
              10, 25, 5, 5, 25, 25, 5),
