@@ -3,7 +3,7 @@ import os
 from typing import Dict, List, Optional
 
 class ClassesManager:
-    def __init__(self, db_name: str = "class.db"):
+    def __init__(self, db_name: str = "classJoueur.db"):
         """Initialise la connexion à la base de données"""
         data_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), "data")
         os.makedirs(data_dir, exist_ok=True)
@@ -61,8 +61,8 @@ class ClassesManager:
 
             # Alterations
             ('Alchimiste', 'ALC', 'Alterations', 'Manie des potions afin d\'améliorer ses statistiques sur une courte durée. Seule classe pouvant se spécialiser dans l\'invocation', 5, 10, 0, 5, 0, 5, 0),
-            ('Voleur', 'VOL', 'Alterations', 'Combattant se concentrant sur son agilité avec de multiples attaques destiné à ignorer la défense et résistance de l\'adversaire', 2, 0, 2, 1, 0, 5, 15),
-            ('Mage Blanc', 'MGB', 'Mages', 'Mage soutenant son équipe grâce à divers sort de soutiens', 0, 5, 0, 0, 5, 15, 0),
+            ('Voleur', 'VOL', 'Alterations', 'Combattant se concentrant sur son agilité avec de multiples attaques et altérations destiné à ignorer la défense et résistance de l\'adversaire', 2, 0, 2, 1, 0, 5, 15),
+            ('Mage Blanc', 'MGB', 'Alterations', 'Mage soutenant son équipe grâce à divers sort de soutiens', 0, 5, 0, 0, 5, 15, 0),
 
 
             # Equilibré
@@ -94,6 +94,17 @@ class ClassesManager:
         self.cursor.execute('SELECT * FROM classes WHERE category = ?', (category,))
         columns = [description[0] for description in self.cursor.description]
         return [dict(zip(columns, row)) for row in self.cursor.fetchall()]
+
+    def create_table(self):
+        """Crée la table des classes si elle n'existe pas"""
+        self.cursor.execute("""
+            CREATE TABLE IF NOT EXISTS classes (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                nom TEXT NOT NULL,
+                taille INTEGER CHECK (taille >= 20 AND taille <= 500),
+                poids INTEGER CHECK (poids >= 20 AND poids <= 1000)
+            )
+        """)
 
 # Exemple d'utilisation
 if __name__ == "__main__":

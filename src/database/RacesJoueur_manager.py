@@ -3,7 +3,7 @@ import os
 from typing import Dict, List, Optional
 
 class DatabaseManager:
-    def __init__(self, db_name: str = "race.db"):
+    def __init__(self, db_name: str = "raceJoueur.db"):
         """Initialise la connexion à la base de données"""
         # Créer le dossier data s'il n'existe pas
         data_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), "data")
@@ -58,16 +58,16 @@ class DatabaseManager:
              15, 25, 10, 8, 15, 15, 15),
             ('Nain', 'NAI', 'Non-Nocturne', 'Race robuste spécialisée très présent dans les montagnes du nord du Rochefort. Ils subissent de nombreuses représailles de la part de l\'Empire dersien qui a récemment asservit la ville de Nérys. Il existe aujourd\'hui une forte diaspora naine au sein de Prospit', 
              30, 5, 25, 25, 5, 5, 5),
-            ('Argoniens', 'ARG', 'Non-Nocturne', 'Race reptilienne dont la catégorisation est régulièrement soumis à débats. Ils sont très présents dans des régions marécageuses ou proche de points d\'eau. Ils sont peu présent à Médonia et préfèrent rester dans des régions éloignées tel que les Marais de Solz\'Ômm.', 
+            ('Argoniens', 'ARG', 'Non-Nocturne', 'Race reptilienne dont la catégorisation est régulièrement soumis à divers débats parmi les raciologues pour déterminer leur classification Loup-Garou ou non. Ils sont très présents dans des régions marécageuses ou proche de points d\'eau. Ils sont peu présent à Médonia et préfèrent rester dans des régions éloignées tel que les Marais de Solz\'Ômm.', 
              20, 10, 15, 15, 5, 10, 25),
             # Nocturnes
             ('Vampire', 'VAM', 'Nocturne', 'Créature dont l\'origine est méconnu. A toujours existé tout au long de l\'histoire. Il est dit qu\ils étaient d\'ancien humains ayant sombré face à une malédiction mais nous ignorons si cela est vrai ou non.', 
              20, 20, 12, 12, 12, 12, 12),
-            ('Loup-Garou', 'LOU', 'Nocturne', 'Bête dont l\'origine est méconnu. Leurs férocité et leurs soifs de chair est leur principale caractéristique.', 
+            ('Loup-Garou', 'LOU', 'Nocturne', 'Créature avec des traits d\'animaux sans écailles ne rappelant pas forcément un canidé. Les kemonomimi, les kitsunes et autres créatures bipèdes avec des traits animaux sont dénommé comme des loups-garous.', 
              15, 10, 25, 15, 5, 25, 25),
-            ('Youkai', 'YOU', 'Nocturne', 'Esprit mystique maîtrisant les arts magiques', 
+            ('Youkai', 'YOU', 'Nocturne', 'Esprit la plupart du temps l\'esprit d\'un défunt n\'ayant pas trouvé la paix.', 
              10, 25, 5, 5, 25, 25, 5),
-            ('Squelette', 'SQU', 'Nocturne', 'Mort-vivant spécialisé dans la magie noire', 
+            ('Squelette', 'SQU', 'Nocturne', 'Mort-vivant squelettique souvent le fruit et victime de la magie d\'un nécromancien.', 
              10, 30, 5, 5, 20, 20, 10)
         ]
         self.cursor.executemany('''

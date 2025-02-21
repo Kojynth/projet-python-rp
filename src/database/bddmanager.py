@@ -1,15 +1,24 @@
 import sqlite3
 
 class DatabaseManager:
+    def __init__(self):
+        self.db_path = 'raceJoueur.db'  # Mise à jour du nom du fichier
+        self.connection = None
+        self.cursor = None
+
     def __enter__(self):
-        self.conn = sqlite3.connect('jeu.db', timeout=10)  # Ajouter un timeout pour éviter les blocages
-        self.cursor = self.conn.cursor()
-        return self.cursor
+        try:
+            self.connection = sqlite3.connect(self.db_path)
+            self.cursor = self.connection.cursor()
+            return self.cursor
+        except sqlite3.Error as e:
+            print(f"Erreur de connexion à la base de données: {e}")
+            raise
 
     def __exit__(self, exc_type, exc_val, exc_tb):
-        if not exc_type:
-            self.conn.commit()
-        self.conn.close()
+        if self.connection:
+            self.connection.commit()
+            self.connection.close()
 
 def creer_base_de_donnees():
     """Crée la base de données et les tables nécessaires"""
@@ -19,20 +28,29 @@ def creer_base_de_donnees():
     # Création de la table Personnage
     cursor.execute('''
     CREATE TABLE IF NOT EXISTS Personnage (
-        id INTEGER PRIMARY KEY,
-        pseudo TEXT,
-        hp INTEGER,
-        hp_total INTEGER,
-        mana INTEGER,
-        mana_total INTEGER,
-        force INTEGER,
-        defense INTEGER,
-        magie INTEGER,
-        resistance INTEGER,
-        agilite INTEGER,
-        niveau INTEGER,
-        points_de_stats INTEGER,
-        experience INTEGER
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        pseudo TEXT NOT NULL,
+        hp INTEGER NOT NULL,
+        hp_total INTEGER NOT NULL,
+        mana INTEGER NOT NULL,
+        mana_total INTEGER NOT NULL,
+        force INTEGER NOT NULL,
+        defense INTEGER NOT NULL,
+        magie INTEGER NOT NULL,
+        resistance INTEGER NOT NULL,
+        agilite INTEGER NOT NULL,
+        niveau INTEGER NOT NULL,
+        points_de_stats INTEGER NOT NULL,
+        experience INTEGER NOT NULL,
+        race_id INTEGER,
+        classe_id INTEGER,
+        sexe TEXT,
+        alignement TEXT,
+        orientation TEXT,
+        taille REAL,
+        poids REAL,
+        FOREIGN KEY (race_id) REFERENCES RaceJoueur(id),
+        FOREIGN KEY (classe_id) REFERENCES ClasseJoueur(id)
     )
     ''')
     
@@ -67,7 +85,7 @@ def sauvegarder_objets(table, objets):
         if table == 'Personnage':
             cursor.execute('''
             INSERT OR REPLACE INTO Personnage 
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             ''', (obj.id, obj.pseudo, obj.hp, obj.hp_total, obj.mana, obj.mana_total,
                  obj.force, obj.defense, obj.magie, obj.resistance, obj.agilite,
                  obj.niveau, obj.points_de_stats, obj.experience))
@@ -104,7 +122,7 @@ def charger_donnees(table, classe):
     return objets
 
 def creer_vue_combattants():
-    with DatabaseManager() as db:
+    with BddManager() as db:
         db.execute('''
         CREATE VIEW IF NOT EXISTS Combattants AS
         SELECT id, pseudo, hp, hp_total, mana, mana_total, force, niveau, experience, points_de_stats, 'Personnage' AS type
