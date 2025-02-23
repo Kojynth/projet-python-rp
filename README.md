@@ -1,8 +1,5 @@
 # Projet de Jeu
 Par Keiji MICHAUD (back) et Raphaël HAGE (front)
-Lien des 2 vidéos youtube : 
-https://youtu.be/bCbzVSdIwQE https://youtu.be/CMUKVS_jrCc
-Lien projet Github : https://github.com/Kojynth/projet-python-rp
 ## Structure du Projet
 
 Le projet est organisé en plusieurs dossiers principaux :
