@@ -33,7 +33,7 @@ button_greet.pack()
 # Addition section
 label_a = tk.Label(root, text="Enter first number:")
 label_a.pack()
-
+ 
 entry_a = tk.Entry(root)
 entry_a.pack()
 

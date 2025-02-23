@@ -49,5 +49,24 @@ Le projet est organisé en plusieurs dossiers principaux :
 - Créer l'histoire et ses quêtes et tout le parcours du joueur/utilisateur à travers le jeu
 - Créer des quêtes intégré au jeu avec de muliples choix et fins
 - Rajouter des options dans le menu actions du menu de combat
+- Avoir une Interface comportant les onglets suivants :
+  - Onglet "Équipes"
+  - Onglet "Inventaires"
+    - Créer un item "Encyclopédie" achetable et collectable
+    - Créer un item "Journal" achetable et dans lequel il sera inscrit des notes au fur et à mesure de l'aventure depuis le moment où il aura acheté le journal (Entrée 1 : J'ai acheté ce journal etc etc)
+  - Onglet "Quêtes"
+  - Onglet "Carte" 
+    - Sélectionner un endroit sur la carte de Médonia (Ville, forêt, montagne, etc...) puis une fois la destination sélectionnée, animation du trajet vers la destination (avec un nombre aléatoire pour indiquer si le trajet se passe bien ou mal en fonction de la valeur obtenue)
+    - une fois arrivé à destination l'exploration par le joueur de l'endroit sélectionné (à moi d'aller dans les détails et dans les différents endroits visitable par le joueur)
+  - Onglet "Options"
+
+Dans l'onglet "Équipes" :
+- Visualiser les différents personnages
+  -Ajouter les âges dans le code et dans la BDD personnages
+  - Sélectionner leurs équipements 
+  - Sélectionner leurs compétences
+  - Visualiser leurs backgrounds 
+  - Des notes et autres anecdotes en lien avec le personnage sélectionné (Avec ce qu'il apprécie, déteste, caractère, etc...)
+
 - A LA FIN  : s'intéresser au côté graphique avec pygame (voir avec Raphaël Hage pour l'interface graphique)
 
