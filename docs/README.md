@@ -59,6 +59,11 @@ Le projet est organisé en plusieurs dossiers principaux :
     - Sélectionner un endroit sur la carte de Médonia (Ville, forêt, montagne, etc...) puis une fois la destination sélectionnée, animation du trajet vers la destination (avec un nombre aléatoire pour indiquer si le trajet se passe bien ou mal en fonction de la valeur obtenue)
     - une fois arrivé à destination l'exploration par le joueur de l'endroit sélectionné (à moi d'aller dans les détails et dans les différents endroits visitable par le joueur)
   - Onglet "Options"
+    - Avoir une option "Paramètres"
+    - Avoir une option "Sauvegarder"
+    - Avoir une option "Charger"
+    - Avoir une option "Aide"
+    - Avoir une option "Quitter"
 
 Dans l'onglet "Équipes" :
 - Visualiser les différents personnages
