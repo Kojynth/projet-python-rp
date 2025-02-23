@@ -65,7 +65,7 @@ def tester_jeu():
             merlin = Personnage(1, "Merlin cliché", 50, 50, 100, 100, 20, 15, 30, 10, 12, 
                               niveau=1, points_de_stats=0, experience=0, race_id=1, classe_id=1)
             
-            # Artxis : Orc (race_id=2) Guerrier (classe_id=2)
+            # Artxis : Loup-Garou (race_id=6) Guerrier (classe_id=2)
             artxis = Personnage(2, "Artxis le troll", 200, 200, 150, 150, 5, 25, 5, 20, 8,
                               niveau=1, points_de_stats=0, experience=0, race_id=2, classe_id=2)
             

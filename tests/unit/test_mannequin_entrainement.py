@@ -8,7 +8,7 @@ from src.core.adversaire import Adversaire
 from src.combat.combat import boucle_combat
 from src.database.bddmanager import DatabaseManager, creer_base_de_donnees
 from src.core.gestion_stats import attribuer_points_apres_niveau
-from src.items.item import Item, potion_full_heal
+from src.items.item import Item
 
 class TestMannequinEntrainement(unittest.TestCase):
     def setUp(self):
@@ -76,9 +76,6 @@ class TestMannequinEntrainement(unittest.TestCase):
             experience=10
         )
 
-        # Créer une potion de soin complet
-        self.potion_soin = Item("Potion de Soin Total", potion_full_heal)
-
     def test_entrainement_xp(self):
         """Test d'entraînement contre des mannequins avec XP croissante"""
         print("\n=== Début de l'entraînement ===")
@@ -121,10 +118,6 @@ class TestMannequinEntrainement(unittest.TestCase):
                 break
             else:
                 print("Veuillez répondre par 'oui' ou 'non'")
-        
-        # Restaurer les HP avant l'entraînement
-        print("\nUtilisation d'une potion de soin total...")
-        self.potion_soin.effet(self.hero)
         
         print("\nÉtat initial:")
         self.hero.afficher_fiche()

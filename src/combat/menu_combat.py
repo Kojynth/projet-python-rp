@@ -44,7 +44,6 @@ def menu_combat(combattant, equipe1, equipe2, is_super_contre=False, is_contre=F
                             resultat = attaquer(combattant, cibles_valides[choix_cible], 
                                               equipe1, equipe2, is_super_contre, is_contre)
                             if resultat == "retour":
-
                                 continue  # Retour à la sélection de cible
                             return "attaque"
                         else:
@@ -53,11 +52,10 @@ def menu_combat(combattant, equipe1, equipe2, is_super_contre=False, is_contre=F
                         print("Entrée invalide. Veuillez réessayer.")
                 
             elif choix == 2:  # Items
-                from src.items.item import charger_items  # Import local
+                from src.items.item import charger_items
                 items = charger_items()
                 items_utilisables = [item for item in items if item.quantite > 0]
                 
-
                 if not items_utilisables:
                     print("Vous n'avez aucun item utilisable.")
                     continue
@@ -66,38 +64,42 @@ def menu_combat(combattant, equipe1, equipe2, is_super_contre=False, is_contre=F
                 for idx, item in enumerate(items_utilisables, start=1):
                     print(f"{idx}. {item.nom} (x{item.quantite})")
                 
-                choix_item = int(input("Numéro de l'item (0 pour retour) : ")) - 1
-                if choix_item == -1:
-                    continue
-                if 0 <= choix_item < len(items_utilisables):
-                    # Choisir sur quelle équipe utiliser l'item
-                    print("\nUtiliser sur quelle équipe ?")
-                    print("1. Équipe alliée")
-                    print("2. Équipe adverse")
-                    
-                    try:
-                        choix_equipe = int(input("Choix de l'équipe : "))
-                        if choix_equipe == 1:
-                            equipe_cible = equipe1 if combattant in equipe1 else equipe2
-                        elif choix_equipe == 2:
-                            equipe_cible = equipe2 if combattant in equipe1 else equipe1
-                        else:
-                            print("Choix invalide.")
-                            continue
-                            
-                        # Afficher les cibles possibles
-                        print("\nUtiliser sur qui ?")
-                        for idx, cible in enumerate(equipe_cible, start=1):
-                            print(f"{idx}. {cible.pseudo} (HP: {cible.hp}/{cible.hp_total})")
-                        
-                        choix_cible = int(input("Numéro de la cible : ")) - 1
-                        if 0 <= choix_cible < len(equipe_cible):
-                            items_utilisables[choix_item].utiliser(equipe_cible[choix_cible])
-                            return True
-                            
-                    except ValueError:
-                        print("Entrée invalide.")
+                try:
+                    choix_item = int(input("Numéro de l'item (0 pour retour) : ")) - 1
+                    if choix_item == -1:
                         continue
+                    if 0 <= choix_item < len(items_utilisables):
+                        item_choisi = items_utilisables[choix_item]
+                        # Choisir sur quelle équipe utiliser l'item
+                        print("\nUtiliser sur quelle équipe ?")
+                        print("1. Équipe alliée")
+                        print("2. Équipe adverse")
+                        
+                        try:
+                            choix_equipe = int(input("Choix de l'équipe : "))
+                            if choix_equipe == 1:
+                                equipe_cible = equipe1 if combattant in equipe1 else equipe2
+                            elif choix_equipe == 2:
+                                equipe_cible = equipe2 if combattant in equipe1 else equipe1
+                            else:
+                                print("Choix invalide.")
+                                continue
+                            
+                            # Afficher les cibles possibles
+                            print("\nUtiliser sur qui ?")
+                            for idx, cible in enumerate(equipe_cible, start=1):
+                                print(f"{idx}. {cible.pseudo} (HP: {cible.hp}/{cible.hp_total})")
+                            
+                            choix_cible = int(input("Numéro de la cible : ")) - 1
+                            if 0 <= choix_cible < len(equipe_cible):
+                                item_choisi.utiliser(equipe_cible[choix_cible])
+                                return True
+                        except ValueError:
+                            print("Entrée invalide.")
+                            continue
+                except ValueError:
+                    print("Entrée invalide.")
+                    continue
                 
             elif choix == 3:  # Compétences
                 print("Les compétences ne sont pas encore implémentées.")
@@ -111,10 +113,9 @@ def menu_combat(combattant, equipe1, equipe2, is_super_contre=False, is_contre=F
                 try:
                     choix_action = int(input("Action : "))
                     if choix_action == 1:
-                        from src.combat.actions_combat import fuite  # Import local
+                        from src.combat.actions_combat import fuite
                         if fuite(combattant):
                             return "fuite"
-
                         return True
                     elif choix_action == 2:
                         continue

@@ -17,6 +17,9 @@ BDD Personnages
 Définir les équipes du personnage
 définir les équipes des adversaires
 Inventaire du joueur
+Système de contres 
+Système de critiques
+
 
 
 En cours :
@@ -24,7 +27,8 @@ En cours :
 
 A faire : 
 système de points de compétences à attribuer pour créer/obtenir des  compétences
-
+Limiter les soins aux personnages encore en vie
+Si un personnage a fuit le commbat alors on ne peut plus interagir avec lui (bug potion de soin utilisable sur le héro ayant fuit)
 Faire une interface graphique pour le menu
 Faire une interface graphique pour le jeu
 Importer la carte de Médonia

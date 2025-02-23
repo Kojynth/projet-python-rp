@@ -1,5 +1,6 @@
 import sqlite3
 import os
+from src.database.connexion import DatabaseConnection
 
 class DatabaseManager:
     def __init__(self):
@@ -36,26 +37,47 @@ class DatabaseManager:
         project_root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
         return os.path.join(project_root, 'data', 'jeu.db')
 
-def creer_base_de_donnees():
-    """Crée la base de données et les tables nécessaires"""
-    with DatabaseManager() as cursor:
+def creer_base_de_donnees(force=False):
+    """
+    Crée toutes les tables nécessaires
+    
+    Args:
+        force (bool): Si True, recrée les tables même si la base existe déjà
+    """
+    db_connection = DatabaseConnection()
+    
+    # Si la base existe et qu'on ne force pas la recréation, on sort
+    if db_connection.exists and not force:
+        print("La base de données existe déjà. Utilisation de la base existante.")
+        return
+
+    with db_connection as cursor:
+        # Suppression des tables existantes si nécessaire
+        if force:
+            cursor.execute('DROP TABLE IF EXISTS Personnage')
+            cursor.execute('DROP TABLE IF EXISTS Adversaire')
+            cursor.execute('DROP TABLE IF EXISTS races')
+            cursor.execute('DROP TABLE IF EXISTS classes')
+            cursor.execute('DROP TABLE IF EXISTS Item')
+            cursor.execute('DROP TABLE IF EXISTS inventaire')
+        
         # Création de la table Personnage
         cursor.execute('''
         CREATE TABLE IF NOT EXISTS Personnage (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             pseudo TEXT NOT NULL,
-            hp INTEGER,
-            hp_total INTEGER,
-            mana INTEGER,
-            mana_total INTEGER,
-            force INTEGER,
-            defense INTEGER,
-            magie INTEGER,
-            resistance INTEGER,
-            agilite INTEGER,
-            niveau INTEGER,
-            points_de_stats INTEGER,
-            experience INTEGER,
+            hp INTEGER NOT NULL,
+            hp_total INTEGER NOT NULL,
+            mana INTEGER NOT NULL,
+            mana_total INTEGER NOT NULL,
+            force INTEGER NOT NULL,
+            defense INTEGER NOT NULL,
+            magie INTEGER NOT NULL,
+            resistance INTEGER NOT NULL,
+            agilite INTEGER NOT NULL,
+            niveau INTEGER NOT NULL,
+            points_de_stats INTEGER NOT NULL,
+            experience INTEGER NOT NULL,
             race_id INTEGER,
             classe_id INTEGER,
             sexe TEXT,
@@ -64,44 +86,26 @@ def creer_base_de_donnees():
             taille REAL,
             poids REAL,
             FOREIGN KEY (race_id) REFERENCES races(race_id),
-            FOREIGN KEY (classe_id) REFERENCES classes(class_id)
+            FOREIGN KEY (classe_id) REFERENCES classes(classe_id)
         )
         ''')
-    
+
         # Création de la table Adversaire
         cursor.execute('''
         CREATE TABLE IF NOT EXISTS Adversaire (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
-            pseudo TEXT,
-            hp INTEGER,
-            hp_total INTEGER,
-            mana INTEGER,
-            mana_total INTEGER,
-            force INTEGER,
-            defense INTEGER,
-            magie INTEGER,
-            resistance INTEGER,
-            agilite INTEGER,
-            niveau INTEGER,
-            experience INTEGER
-        )
-        ''')
-    
-        # Ajout de la table races
-        cursor.execute('''
-        CREATE TABLE IF NOT EXISTS races (
-            race_id INTEGER PRIMARY KEY AUTOINCREMENT,
-            name TEXT NOT NULL,
-            race_code TEXT UNIQUE,
-            category TEXT,
-            description TEXT,
-            hp INTEGER,
-            mp INTEGER,
-            force INTEGER,
-            defense INTEGER,
-            magie INTEGER,
-            resistance INTEGER,
-            agilite INTEGER
+            pseudo TEXT NOT NULL,
+            hp INTEGER NOT NULL,
+            hp_total INTEGER NOT NULL,
+            mana INTEGER NOT NULL,
+            mana_total INTEGER NOT NULL,
+            force INTEGER NOT NULL,
+            defense INTEGER NOT NULL,
+            magie INTEGER NOT NULL,
+            resistance INTEGER NOT NULL,
+            agilite INTEGER NOT NULL,
+            niveau INTEGER NOT NULL,
+            experience INTEGER NOT NULL
         )
         ''')
     
@@ -123,16 +127,15 @@ def creer_base_de_donnees():
         )
         ''')
 
-        # Création de la table items
+        # Création de la table Item
         cursor.execute('''
-        CREATE TABLE IF NOT EXISTS items (
+        CREATE TABLE IF NOT EXISTS Item (
             item_id INTEGER PRIMARY KEY AUTOINCREMENT,
             name VARCHAR(50) NOT NULL,
             item_code VARCHAR(10) UNIQUE NOT NULL,
             category VARCHAR(50) NOT NULL,
             description TEXT,
             value INTEGER DEFAULT 0,
-            weight FLOAT DEFAULT 0,
             hp_bonus INTEGER DEFAULT 0,
             mp_bonus INTEGER DEFAULT 0,
             force_bonus INTEGER DEFAULT 0,
@@ -147,16 +150,14 @@ def creer_base_de_donnees():
         )
         ''')
 
-        # Table d'inventaire pour lier les personnages aux items
+        # Création de la table inventaire
         cursor.execute('''
         CREATE TABLE IF NOT EXISTS inventaire (
             inventaire_id INTEGER PRIMARY KEY AUTOINCREMENT,
-            personnage_id INTEGER,
             item_id INTEGER,
             quantity INTEGER DEFAULT 1,
             is_equipped BOOLEAN DEFAULT 0,
-            FOREIGN KEY (personnage_id) REFERENCES Personnage(id),
-            FOREIGN KEY (item_id) REFERENCES items(item_id)
+            FOREIGN KEY (item_id) REFERENCES Item(item_id)
         )
         ''')
 
@@ -185,12 +186,21 @@ def sauvegarder_objets(table, objets):
                      obj.niveau, obj.experience))
 
 def charger_donnees(table, classe):
-    """Charge les données depuis la base de données"""
-    with DatabaseManager() as cursor:
+    """
+    Charge les données d'une table et crée les objets correspondants
+    
+    Args:
+        table (str): Nom de la table ('Personnage', 'Adversaire' ou 'Item')
+        classe (class): Classe à utiliser pour créer les objets
+    
+    Returns:
+        list: Liste des objets créés
+    """
+    objets = []
+    with DatabaseConnection() as cursor:
         cursor.execute(f'SELECT * FROM {table}')
         rows = cursor.fetchall()
         
-        objets = []
         for row in rows:
             if table == 'Personnage':
                 obj = classe(
@@ -202,10 +212,43 @@ def charger_donnees(table, classe):
                     orientation=row[18], taille=row[19], poids=row[20]
                 )
             elif table == 'Adversaire':
-                obj = classe(row[0], row[1], row[2], row[3], row[4], row[5], row[6],
-                            row[7], row[8], row[9], row[10], row[11], row[12])
+                obj = classe(
+                    id=row[0], pseudo=row[1], hp=row[2], hp_total=row[3],
+                    mana=row[4], mana_total=row[5], force=row[6], defense=row[7],
+                    magie=row[8], resistance=row[9], agilite=row[10], niveau=row[11],
+                    experience=row[12]
+                )
+            elif table == 'Item':
+                # Récupérer la quantité depuis l'inventaire
+                cursor.execute('SELECT quantity FROM inventaire WHERE item_id = ?', (row[0],))
+                quantite_row = cursor.fetchone()
+                quantite = quantite_row[0] if quantite_row else 0
+                
+                obj = classe(
+                    id_item=row[0],
+                    nom=row[1],
+                    code_item=row[2],
+                    categorie=row[3],
+                    description=row[4],
+                    valeur=row[5],
+                    bonus_hp=row[6],
+                    bonus_mp=row[7],
+                    bonus_force=row[8],
+                    bonus_defense=row[9],
+                    bonus_magie=row[10],
+                    bonus_resistance=row[11],
+                    bonus_agilite=row[12],
+                    est_equipable=bool(row[13]),
+                    est_consommable=bool(row[14]),
+                    est_empilable=bool(row[15]),
+                    pile_max=row[16],
+                    quantite=quantite
+                )
+            else:
+                raise ValueError(f"Table inconnue: {table}")
+                
             objets.append(obj)
-        return objets
+    return objets
 
 def initialiser_base_de_donnees():
     """Crée et initialise la base de données avec toutes les tables et données nécessaires"""
@@ -214,6 +257,24 @@ def initialiser_base_de_donnees():
     from .ClasseJoueur_manager import ClassesManager
     
     with DatabaseManager() as cursor:
+        # Création de la table races
+        cursor.execute('''
+        CREATE TABLE IF NOT EXISTS races (
+            race_id INTEGER PRIMARY KEY AUTOINCREMENT,
+            name TEXT NOT NULL,
+            race_code TEXT UNIQUE NOT NULL,
+            category TEXT NOT NULL,
+            description TEXT,
+            hp INTEGER,
+            mp INTEGER,
+            force INTEGER,
+            defense INTEGER,
+            magie INTEGER,
+            resistance INTEGER,
+            agilite INTEGER
+        )
+        ''')
+    
         # Création de la table Personnage
         cursor.execute('''
         CREATE TABLE IF NOT EXISTS Personnage (
@@ -262,24 +323,6 @@ def initialiser_base_de_donnees():
         )
         ''')
     
-        # Création de la table races
-        cursor.execute('''
-        CREATE TABLE IF NOT EXISTS races (
-            race_id INTEGER PRIMARY KEY AUTOINCREMENT,
-            name TEXT NOT NULL,
-            race_code TEXT UNIQUE,
-            category TEXT,
-            description TEXT,
-            hp INTEGER,
-            mp INTEGER,
-            force INTEGER,
-            defense INTEGER,
-            magie INTEGER,
-            resistance INTEGER,
-            agilite INTEGER
-        )
-        ''')
-    
         # Création de la table classes
         cursor.execute('''
         CREATE TABLE IF NOT EXISTS classes (
@@ -298,16 +341,15 @@ def initialiser_base_de_donnees():
         )
         ''')
 
-        # Création de la table items
+        # Création de la table Item
         cursor.execute('''
-        CREATE TABLE IF NOT EXISTS items (
+        CREATE TABLE IF NOT EXISTS Item (
             item_id INTEGER PRIMARY KEY AUTOINCREMENT,
             name VARCHAR(50) NOT NULL,
             item_code VARCHAR(10) UNIQUE NOT NULL,
             category VARCHAR(50) NOT NULL,
             description TEXT,
             value INTEGER DEFAULT 0,
-            weight FLOAT DEFAULT 0,
             hp_bonus INTEGER DEFAULT 0,
             mp_bonus INTEGER DEFAULT 0,
             force_bonus INTEGER DEFAULT 0,
@@ -326,12 +368,10 @@ def initialiser_base_de_donnees():
         cursor.execute('''
         CREATE TABLE IF NOT EXISTS inventaire (
             inventaire_id INTEGER PRIMARY KEY AUTOINCREMENT,
-            personnage_id INTEGER,
             item_id INTEGER,
             quantity INTEGER DEFAULT 1,
             is_equipped BOOLEAN DEFAULT 0,
-            FOREIGN KEY (personnage_id) REFERENCES Personnage(id),
-            FOREIGN KEY (item_id) REFERENCES items(item_id)
+            FOREIGN KEY (item_id) REFERENCES Item(item_id)
         )
         ''')
 
@@ -370,9 +410,9 @@ def initialiser_base_de_donnees():
             ]
 
             cursor.executemany('''
-                INSERT INTO items (
-                    name, item_code, category, description, value, weight,
-                    hp_bonus, mp_bonus, force_bonus, defense_bonus,
+                INSERT INTO Item (
+                    name, item_code, category, description, value, hp_bonus,
+                    mp_bonus, force_bonus, defense_bonus,
                     magie_bonus, resistance_bonus, agilite_bonus,
                     is_equipable, is_consumable, is_stackable, max_stack
                 ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)

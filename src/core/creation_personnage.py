@@ -1,7 +1,8 @@
 from src.database.bddmanager import DatabaseManager
 from src.core.personnage import Personnage
-from src.database.RacesJoueur_manager import DatabaseManager as RacesManager
+from src.database.RacesJoueur_manager import RacesManager
 from src.database.ClasseJoueur_manager import ClassesManager
+from src.database.connexion import DatabaseConnection
 
 class CreationPersonnage:
     def __init__(self):
@@ -17,53 +18,43 @@ class CreationPersonnage:
         
         # Initialisation des managers
         self.races_manager = RacesManager()
-        self.races_manager.connect()
-        
         self.classes_manager = ClassesManager()
-        self.classes_manager.connect()
 
-    def __del__(self):
-        """Déconnexion propre des bases de données"""
-        if hasattr(self, 'races_manager'):
-            self.races_manager.disconnect()
-        if hasattr(self, 'classes_manager'):
-            self.classes_manager.disconnect()
+        self.db_connection = DatabaseConnection()
 
-    def charger_races(self):
-        """Charge les races disponibles depuis la base de données"""
-        try:
-            print(f"Tentative de connexion à la base de données...")
-            races = self.races_manager.get_all_races()
-            print(f"Nombre de races trouvées: {len(races)}")
-            if not races:
-                print("Attention: Aucune race n'a été trouvée dans la base de données!")
-            return races
-        except Exception as e:
-            print(f"Erreur lors du chargement des races: {str(e)}")
-            print(f"Type d'erreur: {type(e)}")
-            return []
+    def afficher_races_disponibles(self):
+        """Affiche les races disponibles"""
+        races = self.races_manager.get_all_races()
+        print("\nRaces disponibles:")
+        for race in races:
+            print(f"{race['race_id']}. {race['name']} ({race['category']})")
+            print(f"   {race['description']}")
+            stats = []
+            if race['hp']: stats.append(f"HP: {race['hp']}")
+            if race['mp']: stats.append(f"MP: {race['mp']}")
+            if race['force']: stats.append(f"Force: {race['force']}")
+            if race['defense']: stats.append(f"Défense: {race['defense']}")
+            if race['magie']: stats.append(f"Magie: {race['magie']}")
+            if race['resistance']: stats.append(f"Résistance: {race['resistance']}")
+            if race['agilite']: stats.append(f"Agilité: {race['agilite']}")
+            print(f"   Stats: {', '.join(stats)}")
 
-    def charger_classes(self):
-        """Charge les classes disponibles depuis la base de données"""
-        try:
-            classes = self.classes_manager.get_all_classes()
-            if not classes:
-                print("Attention: Aucune classe n'a été trouvée dans la base de données!")
-            return classes
-        except Exception as e:
-            print(f"Erreur lors du chargement des classes: {str(e)}")
-            return []
-
-    def afficher_races(self, races):
-        """Affiche la liste des races disponibles"""
-        print("\n=== Races disponibles ===")
-        for i, race in enumerate(races, 1):
-            print(f"{i}. {race['name']} - {race['description']}")
-            
-    def afficher_classes(self, classes):
-        print("\n=== Classes disponibles ===")
-        for i, classe in enumerate(classes, 1):
-            print(f"{i}. {classe['name']} - {classe['description']}")
+    def afficher_classes_disponibles(self):
+        """Affiche les classes disponibles"""
+        classes = self.classes_manager.get_all_classes()
+        print("\nClasses disponibles:")
+        for classe in classes:
+            print(f"{classe['class_id']}. {classe['name']} ({classe['category']})")
+            print(f"   {classe['description']}")
+            stats = []
+            if classe['hp']: stats.append(f"HP: {classe['hp']}")
+            if classe['mp']: stats.append(f"MP: {classe['mp']}")
+            if classe['force']: stats.append(f"Force: {classe['force']}")
+            if classe['defense']: stats.append(f"Défense: {classe['defense']}")
+            if classe['magie']: stats.append(f"Magie: {classe['magie']}")
+            if classe['resistance']: stats.append(f"Résistance: {classe['resistance']}")
+            if classe['agilite']: stats.append(f"Agilité: {classe['agilite']}")
+            print(f"   Stats: {', '.join(stats)}")
 
     def afficher_alignements(self):
         print("\n=== Alignements disponibles ===")
@@ -195,47 +186,57 @@ class CreationPersonnage:
                 print("Le nom doit contenir uniquement des lettres et faire au moins 3 caractères.")
 
     def creer_personnage(self):
-        print("\n=== Création d'un nouveau personnage ===")
-        
-        # Informations de base
-        nom = self.demander_nom_valide("Quel est le nom de votre personnage ?")
-        prenom = self.demander_nom_valide("Quel est le prénom de votre personnage ?")
-        
+        """Interface de création de personnage"""
+        # Demande du prénom
+        while True:
+            prenom = input("\n Quel est le prénom de votre personnage ? ")
+            if self.valider_nom(prenom):
+                break
+            print("\nPrénom invalide! Veuillez réessayer.")
+            print("Le prénom doit contenir uniquement des lettres et faire au moins 3 caractères.")
+
+        # Demande du nom
+        while True:
+            nom = input("\nQuel est le nom de votre personnage ?")
+            if self.valider_nom(nom):
+                break
+            print("\nNom invalide! Veuillez réessayer.")
+            print("Le nom doit contenir uniquement des lettres et faire au moins 3 caractères.")
+
         # Choix du sexe
-        print("\n=== Sexe ===")
+        print("\nChoisissez le sexe de votre personnage:")
         for i, sexe in enumerate(self.sexes, 1):
             print(f"{i}. {sexe}")
+        
         while True:
             try:
                 choix_sexe = int(input("Choisissez le sexe (numéro): "))
                 if 1 <= choix_sexe <= len(self.sexes):
-                    sexe = self.sexes[choix_sexe-1]
+                    sexe = self.sexes[choix_sexe - 1]
                     break
-                print("Choix invalide!")
+                print("Choix invalide, veuillez réessayer.")
             except ValueError:
                 print("Veuillez entrer un numéro valide!")
 
         # Choix de la race
-        races = self.charger_races()
-        self.afficher_races(races)
+        self.afficher_races_disponibles()
         while True:
             try:
-                choix_race = int(input("Choisissez une race (numéro): "))
-                if 1 <= choix_race <= len(races):
-                    race = races[choix_race-1]
+                race_id = int(input("\nChoisissez votre race (entrez le numéro): "))
+                race = self.races_manager.get_race_by_id(race_id)
+                if race:
                     break
-                print("Choix invalide!")
+                print("Race invalide, veuillez réessayer.")
             except ValueError:
                 print("Veuillez entrer un numéro valide!")
 
         # Choix de la classe
-        classes = self.charger_classes()
-        self.afficher_classes(classes)
+        self.afficher_classes_disponibles()
         while True:
             try:
-                choix_classe = int(input("Choisissez une classe (numéro): "))
-                if 1 <= choix_classe <= len(classes):
-                    classe = classes[choix_classe-1]
+                classe_id = int(input("\nChoisissez votre classe (entrez le numéro): "))
+                if 1 <= classe_id <= len(self.classes_manager.get_all_classes()):
+                    classe = self.classes_manager.get_all_classes()[classe_id-1]
                     break
                 print("Choix invalide!")
             except ValueError:
@@ -305,48 +306,56 @@ class CreationPersonnage:
             if not sexe:
                 sexe = default_values["sexe"]
 
-        # Création du personnage avec les stats combinées de la race et de la classe
-        stats_base = {
-            'hp': race['hp'] + classe['hp'],
-            'mp': race['mp'] + classe['mp'],
-            'force': race['force'] + classe['force'],
-            'defense': race['defense'] + classe['defense'],
-            'magie': race['magie'] + classe['magie'],
-            'resistance': race['resistance'] + classe['resistance'],
-            'agilite': race['agilite'] + classe['agilite']
-        }
-
+        # Création du personnage niveau 1 avec le nom complet et le sexe
         nouveau_personnage = Personnage(
-            id=None,
-            pseudo=f"{prenom} {nom}",
-            hp=stats_base['hp'], 
-            hp_total=stats_base['hp'],
-            mana=stats_base['mp'], 
-            mana_total=stats_base['mp'],
-            force=stats_base['force'], 
-            defense=stats_base['defense'],
-            magie=stats_base['magie'], 
-            resistance=stats_base['resistance'],
-            agilite=stats_base['agilite'], 
-            niveau=1,
+            id=None,  # Sera généré par la BDD
+            pseudo=f"{prenom} {nom}",  # Combinaison du prénom et du nom
+            hp=race['hp'] + classe['hp'],
+            hp_total=race['hp'] + classe['hp'],
+            mana=race['mp'] + classe['mp'],
+            mana_total=race['mp'] + classe['mp'],
+            force=race['force'] + classe['force'],
+            defense=race['defense'] + classe['defense'],
+            magie=race['magie'] + classe['magie'],
+            resistance=race['resistance'] + classe['resistance'],
+            agilite=race['agilite'] + classe['agilite'],
+            niveau=1,  # Niveau initial
             points_de_stats=0,
-            experience=0
+            experience=0,
+            race_id=race['race_id'],
+            classe_id=classe['class_id'],
+            sexe=sexe,  # Ajout du sexe
+            alignement=alignement,
+            orientation=orientation,
+            taille=taille,
+            poids=poids
         )
 
-        # Sauvegarder dans la BDD
-        with DatabaseManager() as cursor:
+        # Sauvegarde dans la BDD
+        with self.db_connection as cursor:
             cursor.execute('''
-                INSERT INTO Personnage (pseudo, hp, hp_total, mana, mana_total,
-                force, defense, magie, resistance, agilite, niveau, points_de_stats,
-                experience, race_id, classe_id, sexe, alignement, orientation, taille, poids)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-            ''', (nouveau_personnage.pseudo, nouveau_personnage.hp, nouveau_personnage.hp_total,
-                  nouveau_personnage.mana, nouveau_personnage.mana_total,
-                  nouveau_personnage.force, nouveau_personnage.defense,
-                  nouveau_personnage.magie, nouveau_personnage.resistance,
-                  nouveau_personnage.agilite, nouveau_personnage.niveau,
-                  nouveau_personnage.points_de_stats, nouveau_personnage.experience,
-                  race['race_id'], classe['class_id'], sexe, alignement, orientation, taille, poids))
+                INSERT INTO Personnage (
+                    pseudo, hp, hp_total, mana, mana_total,
+                    force, defense, magie, resistance, agilite,
+                    niveau, points_de_stats, experience,
+                    race_id, classe_id, sexe, alignement, orientation, taille, poids
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            ''', (
+                nouveau_personnage.pseudo, nouveau_personnage.hp,
+                nouveau_personnage.hp_total, nouveau_personnage.mana,
+                nouveau_personnage.mana_total, nouveau_personnage.force,
+                nouveau_personnage.defense, nouveau_personnage.magie,
+                nouveau_personnage.resistance, nouveau_personnage.agilite,
+                nouveau_personnage.niveau, nouveau_personnage.points_de_stats,
+                nouveau_personnage.experience, nouveau_personnage.race_id,
+                nouveau_personnage.classe_id, nouveau_personnage.sexe,
+                nouveau_personnage.alignement, nouveau_personnage.orientation,
+                nouveau_personnage.taille, nouveau_personnage.poids
+            ))
+            
+            # Récupération de l'ID généré
+            cursor.execute('SELECT last_insert_rowid()')
+            nouveau_personnage.id = cursor.fetchone()[0]
 
         print("\nPersonnage créé avec succès!")
         return nouveau_personnage 

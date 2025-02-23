@@ -1,126 +1,175 @@
 import sqlite3
 import os
 from typing import Dict, List, Optional
+from src.database.connexion import DatabaseConnection
 
 class RacesManager:
     def __init__(self):
-        # Obtenir le chemin absolu vers le dossier racine du projet
-        project_root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-        self.db_path = os.path.join(project_root, 'data', 'jeu.db')
-        
-        data_dir = os.path.join(project_root, "data")
-        os.makedirs(data_dir, exist_ok=True)
-        
-        self.conn = None
-        self.cursor = None
-
-    def connect(self):
-        """Établit la connexion à la base de données"""
-        self.conn = sqlite3.connect(self.db_path)
-        self.cursor = self.conn.cursor()
-
-    def disconnect(self):
-        """Ferme la connexion à la base de données"""
-        if self.conn:
-            self.conn.close()
+        self.db_connection = DatabaseConnection()
 
     def create_tables(self):
         """Crée la table des races si elle n'existe pas"""
-        self.cursor.execute('''
+        with self.db_connection as cursor:
+            cursor.execute('''
             CREATE TABLE IF NOT EXISTS races (
                 race_id INTEGER PRIMARY KEY AUTOINCREMENT,
-                name VARCHAR(50) NOT NULL,
-                race_code VARCHAR(10) UNIQUE NOT NULL,
-                category VARCHAR(50) NOT NULL,
+                name TEXT NOT NULL,
+                race_code TEXT UNIQUE NOT NULL,
+                category TEXT NOT NULL,
                 description TEXT,
-                hp INTEGER DEFAULT 0,
-                mp INTEGER DEFAULT 0,
-                force INTEGER DEFAULT 0,
-                defense INTEGER DEFAULT 0,
-                magie INTEGER DEFAULT 0,
-                resistance INTEGER DEFAULT 0,
-                agilite INTEGER DEFAULT 0
+                hp INTEGER,
+                mp INTEGER,
+                force INTEGER,
+                defense INTEGER,
+                magie INTEGER,
+                resistance INTEGER,
+                agilite INTEGER
             )
-        ''')
-        self.conn.commit()
+            ''')
 
     def initialize_data(self):
-        """Initialise les données de base"""
-        # Vérifier d'abord si les données existent déjà
-        self.cursor.execute('SELECT COUNT(*) FROM races')
-        count = self.cursor.fetchone()[0]
-        
-        if count == 0:  # Seulement insérer si la table est vide
-            races = [
-                # Non-Nocturnes
-                ('Humain', 'HUM', 'Non-Nocturne', 'Race présente un peu partout dans le monde surtout à Médonia, il existe diverses factions d\'humains luttant pour le pouvoir et le contrôle.', 
-                 20, 20, 12, 12, 12, 12, 12),
-                ('Elfe', 'ELF', 'Non-Nocturne', 'Race peu présente à Médonia. Ils se trouvent dans de lointaines régions notamment dans les forêts L\'on dit qu\'une forte population d\'elfes vit dans les forêts de Sylster', 
-                 15, 25, 10, 8, 15, 15, 15),
-                ('Nain', 'NAI', 'Non-Nocturne', 'Race robuste spécialisée très présent dans les montagnes du nord du Rochefort. Ils subissent de nombreuses représailles de la part de l\'Empire dersien qui a récemment asservit la ville de Nérys. Il existe aujourd\'hui une forte diaspora naine au sein de Prospit', 
-                 30, 5, 25, 25, 5, 5, 5),
-                ('Argoniens', 'ARG', 'Non-Nocturne', 'Race reptilienne dont la catégorisation est régulièrement soumis à divers débats parmi les raciologues pour déterminer leur classification Loup-Garou ou non. Ils sont très présents dans des régions marécageuses ou proche de points d\'eau. Ils sont peu présent à Médonia et préfèrent rester dans des régions éloignées tel que les Marais de Solz\'Ômm.', 
-                 20, 10, 15, 15, 5, 10, 25),
-                # Nocturnes
-                ('Vampire', 'VAM', 'Nocturne', 'Créature dont l\'origine est méconnu. A toujours existé tout au long de l\'histoire. Il est dit qu\ils étaient d\'ancien humains ayant sombré face à une malédiction mais nous ignorons si cela est vrai ou non.', 
-                 20, 20, 12, 12, 12, 12, 12),
-                ('Loup-Garou', 'LOU', 'Nocturne', 'Créature avec des traits d\'animaux sans écailles ne rappelant pas forcément un canidé. Les kemonomimi, les kitsunes et autres créatures bipèdes avec des traits animaux sont dénommé comme des loups-garous.', 
-                 15, 10, 25, 15, 5, 25, 25),
-                ('Youkai', 'YOU', 'Nocturne', 'Esprit la plupart du temps l\'esprit d\'un défunt n\'ayant pas trouvé la paix.', 
-                 10, 25, 5, 5, 25, 25, 5),
-                ('Squelette', 'SQU', 'Nocturne', 'Mort-vivant squelettique souvent le fruit et victime de la magie d\'un nécromancien.', 
-                 10, 30, 5, 5, 20, 20, 10)
-            ]
-            
-            self.cursor.executemany('''
-                INSERT INTO races 
+        """Initialise les données de base des races"""
+        races_data = [
+            # Non-Nocturnes
+            {
+                'name': 'Humain',
+                'race_code': 'HUM',
+                'category': 'Non-Nocturne',
+                'description': 'Race présente un peu partout dans le monde surtout à Médonia, il existe diverses factions d\'humains luttant pour le pouvoir et le contrôle.',
+                'hp': 20,
+                'mp': 20,
+                'force': 12,
+                'defense': 12,
+                'magie': 12,
+                'resistance': 12,
+                'agilite': 12
+            },
+            {
+                'name': 'Elfe',
+                'race_code': 'ELF',
+                'category': 'Non-Nocturne',
+                'description': 'Race peu présente à Médonia. Ils se trouvent dans de lointaines régions notamment dans les forêts L\'on dit qu\'une forte population d\'elfes vit dans les forêts de Sylster',
+                'hp': 15,
+                'mp': 25,
+                'force': 10,
+                'defense': 8,
+                'magie': 15,
+                'resistance': 15,
+                'agilite': 15
+            },
+            {
+                'name': 'Nain',
+                'race_code': 'NAI',
+                'category': 'Non-Nocturne',
+                'description': 'Race robuste spécialisée très présent dans les montagnes du nord du Rochefort. Ils subissent de nombreuses représailles de la part de l\'Empire dersien qui a récemment asservit la ville de Nérys. Il existe aujourd\'hui une forte diaspora naine au sein de Prospit',
+                'hp': 30,
+                'mp': 5,
+                'force': 25,
+                'defense': 25,
+                'magie': 5,
+                'resistance': 5,
+                'agilite': 5
+            },
+            {
+                'name': 'Argoniens',
+                'race_code': 'ARG',
+                'category': 'Non-Nocturne',
+                'description': 'Race reptilienne dont la catégorisation est régulièrement soumis à divers débats parmi les raciologues pour déterminer leur classification Loup-Garou ou non. Ils sont très présents dans des régions marécageuses ou proche de points d\'eau. Ils sont peu présent à Médonia et préfèrent rester dans des régions éloignées tel que les Marais de Solz\'Ômm.',
+                'hp': 20,
+                'mp': 10,
+                'force': 15,
+                'defense': 15,
+                'magie': 5,
+                'resistance': 10,
+                'agilite': 25
+            },
+            # Nocturnes
+            {
+                'name': 'Vampire',
+                'race_code': 'VAM',
+                'category': 'Nocturne',
+                'description': 'Créature dont l\'origine est méconnu. A toujours existé tout au long de l\'histoire. Il est dit qu\ils étaient d\'ancien humains ayant sombré face à une malédiction mais nous ignorons si cela est vrai ou non.',
+                'hp': 20,
+                'mp': 20,
+                'force': 12,
+                'defense': 12,
+                'magie': 12,
+                'resistance': 12,
+                'agilite': 12
+            },
+            {
+                'name': 'Loup-Garou',
+                'race_code': 'LOU',
+                'category': 'Nocturne',
+                'description': 'Créature avec des traits d\'animaux sans écailles ne rappelant pas forcément un canidé. Les kemonomimi, les kitsunes et autres créatures bipèdes avec des traits animaux sont dénommé comme des loups-garous.',
+                'hp': 15,
+                'mp': 10,
+                'force': 25,
+                'defense': 15,
+                'magie': 5,
+                'resistance': 25,
+                'agilite': 25
+            },
+            {
+                'name': 'Youkai',
+                'race_code': 'YOU',
+                'category': 'Nocturne',
+                'description': 'Esprit la plupart du temps l\'esprit d\'un défunt n\'ayant pas trouvé la paix.',
+                'hp': 10,
+                'mp': 25,
+                'force': 5,
+                'defense': 5,
+                'magie': 25,
+                'resistance': 25,
+                'agilite': 5
+            },
+            {
+                'name': 'Squelette',
+                'race_code': 'SQU',
+                'category': 'Nocturne',
+                'description': 'Mort-vivant squelettique souvent le fruit et victime de la magie d\'un nécromancien.',
+                'hp': 10,
+                'mp': 30,
+                'force': 5,
+                'defense': 5,
+                'magie': 20,
+                'resistance': 20,
+                'agilite': 10
+            }
+        ]
+
+        with self.db_connection as cursor:
+            for race in races_data:
+                cursor.execute('''
+                INSERT OR IGNORE INTO races 
                 (name, race_code, category, description, hp, mp, force, defense, magie, resistance, agilite)
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-            ''', races)
-            self.conn.commit()
+                ''', (
+                    race['name'], race['race_code'], race['category'], race['description'],
+                    race['hp'], race['mp'], race['force'], race['defense'],
+                    race['magie'], race['resistance'], race['agilite']
+                ))
 
     def get_all_races(self) -> List[Dict]:
-        """Récupère toutes les races avec leurs statistiques"""
-        self.cursor.execute('SELECT * FROM races')
-        columns = [description[0] for description in self.cursor.description]
-        return [dict(zip(columns, row)) for row in self.cursor.fetchall()]
+        """Récupère toutes les races"""
+        with self.db_connection as cursor:
+            cursor.execute('SELECT * FROM races')
+            columns = [column[0] for column in cursor.description]
+            return [dict(zip(columns, row)) for row in cursor.fetchall()]
 
-    def get_race_by_code(self, race_code: str) -> Optional[Dict]:
-        """Récupère une race par son code"""
-        self.cursor.execute('SELECT * FROM races WHERE race_code = ?', (race_code,))
-        columns = [description[0] for description in self.cursor.description]
-        row = self.cursor.fetchone()
-        return dict(zip(columns, row)) if row else None
+    def get_race_by_id(self, race_id: int) -> Optional[Dict]:
+        """Récupère une race par son ID"""
+        with self.db_connection as cursor:
+            cursor.execute('SELECT * FROM races WHERE race_id = ?', (race_id,))
+            row = cursor.fetchone()
+            if row:
+                columns = [column[0] for column in cursor.description]
+                return dict(zip(columns, row))
+            return None
 
     def get_races_by_category(self, category: str) -> List[Dict]:
-        """Récupère toutes les races d'une catégorie"""
-        self.cursor.execute('SELECT * FROM races WHERE category = ?', (category,))
-        columns = [description[0] for description in self.cursor.description]
-        return [dict(zip(columns, row)) for row in self.cursor.fetchall()]
-
-# Exemple d'utilisation
-if __name__ == "__main__":
-    db = RacesManager()
-    db.connect()
-    
-    # Création des tables et initialisation des données
-    db.create_tables()
-    db.initialize_data()
-    
-    print("\nToutes les races par catégorie:")
-    for category in ['Non-Nocturne', 'Nocturne']:
-        print(f"\n=== {category} ===")
-        races = db.get_races_by_category(category)
-        for race in races:
-            print(f"\n{race['name']} ({race['race_code']}) - {race['description']}")
-            stats = []
-            if race['hp']: stats.append(f"HP: {race['hp']}")
-            if race['mp']: stats.append(f"MP: {race['mp']}")
-            if race['force']: stats.append(f"Force: {race['force']}")
-            if race['defense']: stats.append(f"Défense: {race['defense']}")
-            if race['magie']: stats.append(f"Magie: {race['magie']}")
-            if race['resistance']: stats.append(f"Résistance: {race['resistance']}")
-            if race['agilite']: stats.append(f"Agilité: {race['agilite']}")
-            print(", ".join(stats))
-    
-    db.disconnect()
+        """Récupère toutes les races d'une catégorie donnée"""
+        with self.db_connection as cursor:
+            cursor.execute('SELECT * FROM races WHERE category = ?', (category,))
+            columns = [column[0] for column in cursor.description]
+            return [dict(zip(columns, row)) for row in cursor.fetchall()]

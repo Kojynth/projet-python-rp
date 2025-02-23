@@ -39,18 +39,35 @@ def attaquer(attacker, target, equipe1, equipe2, is_super_contre=False, is_contr
             except ValueError:
                 print("Entrée invalide. Veuillez réessayer.")
         else:
-            # Les adversaires choisissent l'attaque qui inflige le plus de dégâts
+            # Pour les adversaires, on choisit le type d'attaque qui fait le plus de dégâts
             type_degats = "physique" if calculer_degats(attacker, target, "physique", 0) > calculer_degats(attacker, target, "magique", 0) else "magique"
             break
 
     # Si c'est une contre-attaque, pas de jet d'esquive
     if is_contre:
-        if is_super_contre:  # Si c'est un super contre
-            degats = calculer_degats(attacker, target, type_degats, 0.25)
-        else:
-            degats = calculer_degats(attacker, target, type_degats, 0)
+        # Réduire temporairement la défense/résistance de la cible pour le super contre
+        if is_super_contre:
+            if type_degats == "physique":
+                defense_originale = target.defense
+                target.defense = int(target.defense * 0.75)  # Réduction de 25% de la défense
+            else:
+                resistance_originale = target.resistance
+                target.resistance = int(target.resistance * 0.75)  # Réduction de 25% de la résistance
+            
+            print(f"Super contre ! La {'défense' if type_degats == 'physique' else 'résistance'} de {target.pseudo} est temporairement réduite de 25% !")
+
+        # Calculer les dégâts
+        degats = calculer_degats(attacker, target, type_degats, 0)
         print(f"Contre-attaque ! {target.pseudo} ne peut pas esquiver !")
         subir_attaque(target, degats)
+
+        # Restaurer la défense/résistance originale si c'était un super contre
+        if is_super_contre:
+            if type_degats == "physique":
+                target.defense = defense_originale
+            else:
+                target.resistance = resistance_originale
+
         return True
 
     # Jet d'esquive normal pour les attaques standards
@@ -138,17 +155,15 @@ def contre_attaque(target, attacker, type_contre, equipe1, equipe2):
         print(f"\n{target.pseudo} peut effectuer une action complète avec bonus !")
         print("Si vous choisissez d'attaquer, l'attaque sera non-esquivable et ignorera 25% de la défense/résistance de la cible")
         if isinstance(target, Personnage):
-            resultat = menu_combat(target, equipe1, equipe2, is_contre=True)
-            if resultat == "attaque":
-                pass
+            menu_combat(target, equipe1, equipe2, is_super_contre=True, is_contre=True)
             
     elif type_contre == "ultra":
-        print(f"\n{target.pseudo} peut effectuer deux actions complètes !")
-        print("Les attaques seront non-esquivables !")
+        print(f"\n{target.pseudo} peut effectuer deux actions complètes avec bonus !")
+        print("Les attaques seront non-esquivables et ignoreront 25% de la défense/résistance de la cible !")
         if isinstance(target, Personnage):
             for i in range(2):
                 print(f"\nAction {i+1}/2 :")
-                menu_combat(target, equipe1, equipe2, is_contre=True)
+                menu_combat(target, equipe1, equipe2, is_super_contre=True, is_contre=True)
 
 # Fonction pour permettre au joueur de fuir le combat
 def fuite(combattant):
