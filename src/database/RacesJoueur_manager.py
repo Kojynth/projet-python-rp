@@ -2,15 +2,15 @@ import sqlite3
 import os
 from typing import Dict, List, Optional
 
-class DatabaseManager:
-    def __init__(self, db_name: str = "raceJoueur.db"):
-        """Initialise la connexion à la base de données"""
-        # Créer le dossier data s'il n'existe pas
-        data_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), "data")
+class RacesManager:
+    def __init__(self):
+        # Obtenir le chemin absolu vers le dossier racine du projet
+        project_root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+        self.db_path = os.path.join(project_root, 'data', 'jeu.db')
+        
+        data_dir = os.path.join(project_root, "data")
         os.makedirs(data_dir, exist_ok=True)
         
-        # Définir le chemin complet de la base de données
-        self.db_path = os.path.join(data_dir, db_name)
         self.conn = None
         self.cursor = None
 
@@ -25,17 +25,13 @@ class DatabaseManager:
             self.conn.close()
 
     def create_tables(self):
-        """Crée la table des races"""
-        # Supprime la table si elle existe
-        self.cursor.execute('DROP TABLE IF EXISTS races')
-        
-        # Crée la nouvelle table
+        """Crée la table des races si elle n'existe pas"""
         self.cursor.execute('''
-            CREATE TABLE races (
+            CREATE TABLE IF NOT EXISTS races (
                 race_id INTEGER PRIMARY KEY AUTOINCREMENT,
                 name VARCHAR(50) NOT NULL,
                 race_code VARCHAR(10) UNIQUE NOT NULL,
-                category VARCHAR(50) NOT NULL,  -- 'Nocturne' ou 'Non-Nocturne'
+                category VARCHAR(50) NOT NULL,
                 description TEXT,
                 hp INTEGER DEFAULT 0,
                 mp INTEGER DEFAULT 0,
@@ -50,32 +46,38 @@ class DatabaseManager:
 
     def initialize_data(self):
         """Initialise les données de base"""
-        races = [
-            # Non-Nocturnes
-            ('Humain', 'HUM', 'Non-Nocturne', 'Race présente un peu partout dans le monde surtout à Médonia, il existe diverses factions d\'humains luttant pour le pouvoir et le contrôle.', 
-             20, 20, 12, 12, 12, 12, 12),
-            ('Elfe', 'ELF', 'Non-Nocturne', 'Race peu présente à Médonia. Ils se trouvent dans de lointaines régions notamment dans les forêts L\'on dit qu\'une forte population d\'elfes vit dans les forêts de Sylster', 
-             15, 25, 10, 8, 15, 15, 15),
-            ('Nain', 'NAI', 'Non-Nocturne', 'Race robuste spécialisée très présent dans les montagnes du nord du Rochefort. Ils subissent de nombreuses représailles de la part de l\'Empire dersien qui a récemment asservit la ville de Nérys. Il existe aujourd\'hui une forte diaspora naine au sein de Prospit', 
-             30, 5, 25, 25, 5, 5, 5),
-            ('Argoniens', 'ARG', 'Non-Nocturne', 'Race reptilienne dont la catégorisation est régulièrement soumis à divers débats parmi les raciologues pour déterminer leur classification Loup-Garou ou non. Ils sont très présents dans des régions marécageuses ou proche de points d\'eau. Ils sont peu présent à Médonia et préfèrent rester dans des régions éloignées tel que les Marais de Solz\'Ômm.', 
-             20, 10, 15, 15, 5, 10, 25),
-            # Nocturnes
-            ('Vampire', 'VAM', 'Nocturne', 'Créature dont l\'origine est méconnu. A toujours existé tout au long de l\'histoire. Il est dit qu\ils étaient d\'ancien humains ayant sombré face à une malédiction mais nous ignorons si cela est vrai ou non.', 
-             20, 20, 12, 12, 12, 12, 12),
-            ('Loup-Garou', 'LOU', 'Nocturne', 'Créature avec des traits d\'animaux sans écailles ne rappelant pas forcément un canidé. Les kemonomimi, les kitsunes et autres créatures bipèdes avec des traits animaux sont dénommé comme des loups-garous.', 
-             15, 10, 25, 15, 5, 25, 25),
-            ('Youkai', 'YOU', 'Nocturne', 'Esprit la plupart du temps l\'esprit d\'un défunt n\'ayant pas trouvé la paix.', 
-             10, 25, 5, 5, 25, 25, 5),
-            ('Squelette', 'SQU', 'Nocturne', 'Mort-vivant squelettique souvent le fruit et victime de la magie d\'un nécromancien.', 
-             10, 30, 5, 5, 20, 20, 10)
-        ]
-        self.cursor.executemany('''
-            INSERT INTO races 
-            (name, race_code, category, description, hp, mp, force, defense, magie, resistance, agilite)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-        ''', races)
-        self.conn.commit()
+        # Vérifier d'abord si les données existent déjà
+        self.cursor.execute('SELECT COUNT(*) FROM races')
+        count = self.cursor.fetchone()[0]
+        
+        if count == 0:  # Seulement insérer si la table est vide
+            races = [
+                # Non-Nocturnes
+                ('Humain', 'HUM', 'Non-Nocturne', 'Race présente un peu partout dans le monde surtout à Médonia, il existe diverses factions d\'humains luttant pour le pouvoir et le contrôle.', 
+                 20, 20, 12, 12, 12, 12, 12),
+                ('Elfe', 'ELF', 'Non-Nocturne', 'Race peu présente à Médonia. Ils se trouvent dans de lointaines régions notamment dans les forêts L\'on dit qu\'une forte population d\'elfes vit dans les forêts de Sylster', 
+                 15, 25, 10, 8, 15, 15, 15),
+                ('Nain', 'NAI', 'Non-Nocturne', 'Race robuste spécialisée très présent dans les montagnes du nord du Rochefort. Ils subissent de nombreuses représailles de la part de l\'Empire dersien qui a récemment asservit la ville de Nérys. Il existe aujourd\'hui une forte diaspora naine au sein de Prospit', 
+                 30, 5, 25, 25, 5, 5, 5),
+                ('Argoniens', 'ARG', 'Non-Nocturne', 'Race reptilienne dont la catégorisation est régulièrement soumis à divers débats parmi les raciologues pour déterminer leur classification Loup-Garou ou non. Ils sont très présents dans des régions marécageuses ou proche de points d\'eau. Ils sont peu présent à Médonia et préfèrent rester dans des régions éloignées tel que les Marais de Solz\'Ômm.', 
+                 20, 10, 15, 15, 5, 10, 25),
+                # Nocturnes
+                ('Vampire', 'VAM', 'Nocturne', 'Créature dont l\'origine est méconnu. A toujours existé tout au long de l\'histoire. Il est dit qu\ils étaient d\'ancien humains ayant sombré face à une malédiction mais nous ignorons si cela est vrai ou non.', 
+                 20, 20, 12, 12, 12, 12, 12),
+                ('Loup-Garou', 'LOU', 'Nocturne', 'Créature avec des traits d\'animaux sans écailles ne rappelant pas forcément un canidé. Les kemonomimi, les kitsunes et autres créatures bipèdes avec des traits animaux sont dénommé comme des loups-garous.', 
+                 15, 10, 25, 15, 5, 25, 25),
+                ('Youkai', 'YOU', 'Nocturne', 'Esprit la plupart du temps l\'esprit d\'un défunt n\'ayant pas trouvé la paix.', 
+                 10, 25, 5, 5, 25, 25, 5),
+                ('Squelette', 'SQU', 'Nocturne', 'Mort-vivant squelettique souvent le fruit et victime de la magie d\'un nécromancien.', 
+                 10, 30, 5, 5, 20, 20, 10)
+            ]
+            
+            self.cursor.executemany('''
+                INSERT INTO races 
+                (name, race_code, category, description, hp, mp, force, defense, magie, resistance, agilite)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            ''', races)
+            self.conn.commit()
 
     def get_all_races(self) -> List[Dict]:
         """Récupère toutes les races avec leurs statistiques"""
@@ -98,7 +100,7 @@ class DatabaseManager:
 
 # Exemple d'utilisation
 if __name__ == "__main__":
-    db = DatabaseManager()
+    db = RacesManager()
     db.connect()
     
     # Création des tables et initialisation des données

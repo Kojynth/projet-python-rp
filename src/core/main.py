@@ -4,13 +4,13 @@ Created on Wed Dec 14 18:51:22 2022
 
 @author: user
 """
-from src.core.equipe_joueur import *
-from src.core.equipe_adverse import *
-from src.core.personnage import *
-from src.core.adversaire import *
-from src.core.ressources import *
-from src.combat.combat import *
-from src.database.bddmanager import *
+from .equipe_joueur import *
+from .equipe_adverse import *
+from .personnage import *
+from .adversaire import *
+from .ressources import *
+from ..combat.combat import *
+from ..database.bddmanager import *
 
 class Personnage:
     def __init__(self, pseudo, hp, attaque):
@@ -144,3 +144,14 @@ while True:
                     print("Choix invalide. Passez votre tour.")
             except ValueError:
                 print("Entrée invalide. Passez votre tour.")
+
+def main():
+    # Initialisation de la base de données
+    print("Initialisation de la base de données...")
+    initialiser_base_de_donnees()
+    print("Base de données initialisée avec succès!")
+    
+    # ... reste du code main.py ...
+
+if __name__ == "__main__":
+    main()

@@ -3,12 +3,13 @@ import os
 from typing import Dict, List, Optional
 
 class ClassesManager:
-    def __init__(self, db_name: str = "classJoueur.db"):
-        """Initialise la connexion à la base de données"""
-        data_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), "data")
+    def __init__(self):
+        project_root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+        self.db_path = os.path.join(project_root, 'data', 'jeu.db')
+        
+        data_dir = os.path.join(project_root, "data")
         os.makedirs(data_dir, exist_ok=True)
         
-        self.db_path = os.path.join(data_dir, db_name)
         self.conn = None
         self.cursor = None
 
@@ -23,17 +24,13 @@ class ClassesManager:
             self.conn.close()
 
     def create_tables(self):
-        """Crée la table des classes"""
-        # Supprime la table si elle existe
-        self.cursor.execute('DROP TABLE IF EXISTS classes')
-        
-        # Crée la nouvelle table
+        """Crée la table des classes si elle n'existe pas"""
         self.cursor.execute('''
-            CREATE TABLE classes (
+            CREATE TABLE IF NOT EXISTS classes (
                 class_id INTEGER PRIMARY KEY AUTOINCREMENT,
                 name VARCHAR(50) NOT NULL,
                 class_code VARCHAR(10) UNIQUE NOT NULL,
-                category VARCHAR(50) NOT NULL,  -- 'Physiques', 'Mages', 'Alterations', 'Equilibré'
+                category VARCHAR(50) NOT NULL,
                 description TEXT,
                 hp INTEGER DEFAULT 0,
                 mp INTEGER DEFAULT 0,
@@ -48,6 +45,9 @@ class ClassesManager:
 
     def initialize_data(self):
         """Initialise les données de base"""
+        # Supprimer toutes les données existantes
+        self.cursor.execute('DELETE FROM classes')
+        
         classes = [
             # Physiques
             ('Guerrier', 'GUE', 'Physiques', 'Combattant polivalent pouvant se défendre et attaquer', 15, 0, 5, 3, 0, 2, 0),

@@ -11,12 +11,40 @@ from src.database.ClasseJoueur_manager import ClassesManager
 def initialiser_bases_donnees():
     """Initialise toutes les bases de données nécessaires"""
     try:
-        # Création de la base principale et de la table Personnage
+        # Création de la base principale et de toutes les tables
         print("Création de la base de données principale...")
-        creer_base_de_donnees()
+        with DatabaseManager() as cursor:
+            # Table Personnage
+            cursor.execute('''
+            CREATE TABLE IF NOT EXISTS Personnage (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                pseudo TEXT NOT NULL,
+                hp INTEGER,
+                hp_total INTEGER,
+                mana INTEGER,
+                mana_total INTEGER,
+                force INTEGER,
+                defense INTEGER,
+                magie INTEGER,
+                resistance INTEGER,
+                agilite INTEGER,
+                niveau INTEGER,
+                points_de_stats INTEGER,
+                experience INTEGER,
+                race_id INTEGER,
+                classe_id INTEGER,
+                sexe TEXT,
+                alignement TEXT,
+                orientation TEXT,
+                taille REAL,
+                poids REAL,
+                FOREIGN KEY (race_id) REFERENCES races(race_id),
+                FOREIGN KEY (classe_id) REFERENCES classes(class_id)
+            )
+            ''')
         
         # Initialisation des races
-        print("Initialisation de la base de données des races...")
+        print("Initialisation des races...")
         races_manager = RacesManager()
         races_manager.connect()
         races_manager.create_tables()
@@ -24,14 +52,14 @@ def initialiser_bases_donnees():
         races_manager.disconnect()
         
         # Initialisation des classes
-        print("Initialisation de la base de données des classes...")
+        print("Initialisation des classes...")
         classes_manager = ClassesManager()
         classes_manager.connect()
         classes_manager.create_tables()
         classes_manager.initialize_data()
         classes_manager.disconnect()
         
-        print("Toutes les bases de données ont été initialisées avec succès!")
+        print("Toutes les tables ont été initialisées avec succès!")
         
     except Exception as e:
         print(f"Erreur lors de l'initialisation des bases de données: {e}")

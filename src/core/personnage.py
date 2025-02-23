@@ -2,7 +2,11 @@ from src.database.bddmanager import sauvegarder_objets, charger_donnees
 from src.core.ressources import *
 
 class Personnage:
-    def __init__(self, id, pseudo, hp, hp_total, mana, mana_total, force, defense, magie, resistance, agilite, niveau, points_de_stats, experience):
+    def __init__(self, id, pseudo, hp, hp_total, mana, mana_total, force, defense, magie, 
+                 resistance, agilite, niveau=1, points_de_stats=0, experience=0, 
+                 race_id=None, classe_id=None, sexe=None, alignement=None, 
+                 orientation=None, taille=None, poids=None):
+        """Initialise un personnage avec ses attributs"""
         self.id = id
         self.pseudo = pseudo
         self.hp = hp
@@ -17,6 +21,14 @@ class Personnage:
         self.niveau = niveau
         self.points_de_stats = points_de_stats
         self.experience = experience
+        self.race_id = race_id
+        self.classe_id = classe_id
+        self.sexe = sexe
+        self.alignement = alignement
+        self.orientation = orientation
+        self.taille = taille
+        self.poids = poids
+        self.degats_infliges = 0  # Pour le suivi des dégâts
 
     def calculer_hp(self):
         """

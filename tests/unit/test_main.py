@@ -1,5 +1,12 @@
 import unittest
 import sqlite3
+import os
+import sys
+
+# Ajouter le répertoire racine du projet au PYTHONPATH
+project_root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+sys.path.append(project_root)
+
 from src.core.main import DatabaseManager, creer_base_de_donnees, sauvegarder_objets, charger_donnees, inserer_donnees_de_test, tester_jeu
 from src.core.personnage import Personnage
 
