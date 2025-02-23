@@ -28,27 +28,41 @@ except ImportError as e:
     print(f"Contenu du dossier src/core: {os.listdir(os.path.join(project_root, 'src', 'core'))}")
     raise
 
+# Définition des fonctions greet et add
+def greet(name):
+    return f"Hello, {name}!"
+
+def add(a, b):
+    return a + b
+
 def test_progression():
     # S'assurer que la base de données est créée
     creer_base_de_donnees()
-    
+
     # Créer un personnage
     hero = Personnage(1, "TestHero", 100, 100, 50, 50, 20, 10, 15, 10, 12, 1, 0, 0)
-    
+
     # Afficher état initial
     print("\nÉtat initial:")
     hero.afficher_fiche()
-    
+
     # Test niveau 1-5 (gain de 20 mana par niveau et 5 points de stats)
     print("\nTest des niveaux 1-5:")
     xp_totale = sum([(i+1)*10 for i in range(1, 5)])
     hero.gagner_experience(xp_totale)
-    
+
     # Test niveau 99-101 (changement de gain de mana et points de stats)
     print("\nTest des niveaux 99-101 (pour voir les changements de gains):")
     # Calculer l'XP nécessaire pour atteindre le niveau 101
     xp_totale = sum([(i+1)*10 for i in range(5, 101)])
     hero.gagner_experience(xp_totale)
+
+    # Test des fonctions greet et add
+    print("\nTest de la fonction greet:")
+    print(greet("Alice"))
+
+    print("\nTest de la fonction add:")
+    print(add(5, 3))
 
 if __name__ == '__main__':
     test_progression()
