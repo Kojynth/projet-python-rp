@@ -3,6 +3,7 @@ from src.core.personnage import Personnage
 from src.core.ressources import *
 from src.database.bddmanager import *
 from src.core.adversaire import Adversaire
+from ..database.bddmanager import DatabaseManager
 
 
 def afficher_combattants(combattants):
@@ -115,4 +116,81 @@ def afficher_stats_equipe(equipe):
     print(f"L'équipe victorieuse a {hp_total} HP restants.")
     print(f"{combattant.pseudo} - HP: {combattant.hp}")
     print(f"Combattants encore en vie : {', '.join(combattants_vivants)}")
+
+def selectionner_equipe_joueurs():
+    """Sélectionne une équipe de personnages joueurs"""
+    equipe = []
+    
+    with DatabaseManager() as cursor:
+        cursor.execute('SELECT * FROM Personnage WHERE hp > 0 ORDER BY id')
+        personnages = cursor.fetchall()
+        
+        print("\nSélectionnez vos personnages:")
+        for i, perso in enumerate(personnages, 1):
+            print(f"{i}. {perso[1]} - HP: {perso[2]}/{perso[3]}, Force: {perso[6]}")
+        
+        selection = input("Sélectionnez les personnages (entrez les numéros séparés par des espaces): ").split()
+        
+        for i in selection:
+            perso = personnages[int(i) - 1]
+            clone_pseudo = perso[1] + " (héros)"
+            
+            # Création avec tous les champs de la table Personnage
+            personnage = Personnage(
+                pseudo=clone_pseudo,
+                hp=perso[2],
+                force=perso[6],
+                niveau=perso[11],
+                mana=perso[4]
+            )
+            # On définit les HP totaux après la création
+            personnage.hp_total = perso[3]
+            
+            # On définit les autres attributs après la création
+            personnage.mana_total = perso[5]
+            personnage.defense = perso[7]
+            personnage.magie = perso[8]
+            personnage.resistance = perso[9]
+            personnage.agilite = perso[10]
+            personnage.points_de_stats = perso[12]
+            personnage.experience = perso[13]
+            personnage.race_id = perso[14]
+            personnage.classe_id = perso[15]
+            personnage.sexe = perso[16]
+            personnage.alignement = perso[17]
+            personnage.orientation = perso[18]
+            personnage.taille = perso[19]
+            personnage.poids = perso[20]
+            
+            equipe.append(personnage)
+    
+    return equipe
+
+def selectionner_equipe_adversaires():
+    """Sélectionne une équipe d'adversaires"""
+    equipe = []
+    
+    with DatabaseManager() as cursor:
+        cursor.execute('SELECT * FROM Adversaire WHERE hp > 0 ORDER BY id')
+        adversaires = cursor.fetchall()
+        
+        print("\nAdversaires disponibles:")
+        for i, adv in enumerate(adversaires, 1):
+            print(f"{i}. {adv[1]} - HP: {adv[2]}/{adv[3]}, Force: {adv[6]}")
+        
+        selection = input("Sélectionnez les adversaires (entrez les numéros séparés par des espaces): ").split()
+        
+        for i in selection:
+            adv = adversaires[int(i) - 1]
+            clone_pseudo = adv[1] + " (ennemi)"
+            
+            adversaire = Adversaire(
+                adv[0],  # id
+                clone_pseudo,  # pseudo
+                adv[2],  # hp
+                adv[3]   # hp_total
+            )
+            equipe.append(adversaire)
+    
+    return equipe
 

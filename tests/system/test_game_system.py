@@ -10,7 +10,7 @@ if project_root not in sys.path:
 
 from src.database.bddmanager import DatabaseManager, creer_base_de_donnees
 from src.core.personnage import Personnage, sauvegarder_personnages, charger_personnages
-from src.core.equipe_joueur import selectionner_equipe
+from src.core.equipe_joueur import selectionner_equipe_joueurs, selectionner_equipe_adversaires
 from src.combat.combat import boucle_combat
 from src.core.adversaire import Adversaire, ajouter_adversaires, sauvegarder_adversaires
 from src.core.equipe_adverse import EquipeAdverse
@@ -39,6 +39,14 @@ def inserer_donnees_de_test():
                 ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                 ''', data)
 
+def charger_adversaires():
+    """Charge les adversaires depuis la base de données"""
+    with DatabaseManager() as cursor:  # Utilise DatabaseManager au lieu d'une connexion directe
+        cursor.execute('SELECT * FROM Adversaire')
+        adversaires_data = cursor.fetchall()
+        adversaires = [Adversaire(*data) for data in adversaires_data]
+        return adversaires
+
 def tester_jeu():
     """Fonction principale de test"""
     try:
@@ -47,8 +55,9 @@ def tester_jeu():
         print("Insertion des données de test...")
         inserer_donnees_de_test()
         
-        # Charger les personnages depuis la base de données
+        # Charger les personnages et adversaires séparément
         personnages = charger_personnages()
+        adversaires = charger_adversaires()  # Utilise la nouvelle fonction
         
         # Si aucun personnage n'est trouvé, créer des personnages par défaut
         if not personnages:
@@ -66,17 +75,16 @@ def tester_jeu():
             
             personnages = [merlin, artxis, pedro]
             sauvegarder_personnages(personnages)
-
-        # Sélectionner les équipes
-        equipe1 = selectionner_equipe(1)
-        equipe2 = selectionner_equipe(2)
-
-        # Combiner les équipes
-        liste_combattant = equipe1 + equipe2
-
-        # Lancer la boucle de combat
-        boucle_combat(liste_combattant, equipe1, equipe2)
-
+        
+        print("\nÉquipe des personnages:")
+        equipe1 = selectionner_equipe_joueurs()  # Uniquement les personnages
+        
+        print("\nÉquipe des ennemis:")
+        equipe2 = selectionner_equipe_adversaires()  # Uniquement les adversaires
+        
+        # Lancer le combat
+        boucle_combat(equipe1, equipe2)
+        
         # Réinitialiser les stats des adversaires après le combat
         for adversaire in equipe2:
             if isinstance(adversaire, Adversaire):
@@ -91,19 +99,6 @@ def tester_jeu():
     except Exception as e:
         print(f"Une erreur est survenue: {e}")
         raise
-
-# Fonction pour charger les adversaires depuis la base de données
-def charger_adversaires():
-    conn = sqlite3.connect('jeu.db')
-    cursor = conn.cursor()
-
-    # Charger les adversaires
-    cursor.execute('SELECT * FROM Adversaire')
-    adversaires_data = cursor.fetchall()
-    adversaires = [Adversaire(*data) for data in adversaires_data]
-
-    conn.close()
-    return adversaires
 
 if __name__ == "__main__":
     tester_jeu()
